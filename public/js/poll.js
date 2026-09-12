@@ -18,7 +18,7 @@ function renderOptions(poll) {
 
       return `
         <div class="${classes.join(" ")}" data-option-id="${opt.id}" data-clickable="${!hasVoted}">
-          <div class="option-bar" style="width: ${hasVoted ? opt.percentage : 0}%"></div>
+          <div class="option-bar" data-target-width="${hasVoted ? opt.percentage : 0}"></div>
           <div class="option-content">
             <span>${isChosen ? "✓ " : ""}${escapeHtml(opt.text)}</span>
             ${hasVoted ? `<span>${opt.percentage}% (${opt.votes})</span>` : ""}
@@ -52,9 +52,28 @@ function renderPoll(poll) {
       el.addEventListener("click", () => castVote(poll.id, Number(el.dataset.optionId)));
     });
   }
+
+  animateBars(container);
 }
 
+// Sonuç barlarını 0'dan hedef yüzdeye "dolarak" animasyonla göster.
+function animateBars(container) {
+  const bars = container.querySelectorAll(".option-bar");
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      bars.forEach((bar) => {
+        bar.style.width = `${bar.dataset.targetWidth}%`;
+      });
+    });
+  });
+}
+
+let voteInFlight = false;
+
 async function castVote(pollId, optionId) {
+  if (voteInFlight) return;
+  voteInFlight = true;
+
   const errorBox = document.getElementById("vote-error");
   errorBox.style.display = "none";
   try {
@@ -63,6 +82,8 @@ async function castVote(pollId, optionId) {
   } catch (err) {
     errorBox.textContent = err.message;
     errorBox.style.display = "block";
+  } finally {
+    voteInFlight = false;
   }
 }
 

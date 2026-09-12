@@ -26,7 +26,7 @@ async function initNav() {
 
   if (user) {
     nav.innerHTML = `
-      <span class="muted">${user.username}</span>
+      <span class="username-badge">${user.username}</span>
       <a href="new-poll.html" class="btn">+ Anket</a>
       <button id="logout-btn" type="button">Çıkış</button>
     `;

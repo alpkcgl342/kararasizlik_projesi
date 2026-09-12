@@ -8,7 +8,7 @@ async function renderFeed() {
     if (polls.length === 0) {
       feed.innerHTML = `
         <div class="empty-state">
-          Henüz hiç anket yok. İlk anketi sen oluştur!
+          🎲 Henüz hiç anket yok. İlk anketi sen oluştur!
         </div>
       `;
       return;

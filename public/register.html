@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kayıt Ol — Kararsızım</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header>
+    <a class="brand" href="index.html">Kararsızım</a>
+    <nav id="nav-auth"></nav>
+  </header>
+
+  <main>
+    <div class="card">
+      <h1>Kayıt Ol</h1>
+      <form id="register-form">
+        <div class="field">
+          <label for="username">Kullanıcı adı</label>
+          <input type="text" id="username" required minlength="3" maxlength="32" pattern="[a-zA-Z0-9_]+" />
+        </div>
+        <div class="field">
+          <label for="email">E-posta</label>
+          <input type="email" id="email" required />
+        </div>
+        <div class="field">
+          <label for="password">Parola</label>
+          <input type="password" id="password" required minlength="8" />
+        </div>
+
+        <div class="error" id="form-error" style="display:none"></div>
+
+        <button type="submit">Kayıt Ol</button>
+      </form>
+      <p class="muted" style="margin-top: 1rem;">
+        Zaten hesabın var mı? <a href="login.html">Giriş yap</a>
+      </p>
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    document.getElementById("register-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const errorBox = document.getElementById("form-error");
+      errorBox.style.display = "none";
+      try {
+        await window.api.post("/auth/register", {
+          username: document.getElementById("username").value.trim(),
+          email: document.getElementById("email").value.trim(),
+          password: document.getElementById("password").value,
+        });
+        window.location.href = "index.html";
+      } catch (err) {
+        errorBox.textContent = err.message;
+        errorBox.style.display = "block";
+      }
+    });
+  </script>
+</body>
+</html>

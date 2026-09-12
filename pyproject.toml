@@ -1,0 +1,3 @@
+[tool.vercel]
+# api/main.py, "app" değişkeni (FastAPI() örneği) — bkz. CLAUDE.md / Faz 4 notları.
+entrypoint = "api.main:app"

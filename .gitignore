@@ -6,6 +6,7 @@ venv/
 .env
 .env.local
 .idea/
+.vercel/
 *.log
 .DS_Store
 .pytest_cache/

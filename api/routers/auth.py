@@ -40,10 +40,12 @@ def register(body: RegisterRequest, response: Response, session: Session = Depen
         select(User).where(or_(User.username == body.username, User.email == body.email))
     ).first()
     if existing is not None:
-        field = "username" if existing.username == body.username else "email"
+        # Hangi alanın çakıştığını belirtmiyoruz: aksi halde bu endpoint, başka bir
+        # kullanıcının e-postasının sistemde kayıtlı olup olmadığını (user enumeration)
+        # ifşa eden bir yan kanala dönüşür.
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail=f"Bu {field} zaten kullanımda",
+            detail="Bu kullanıcı adı veya e-posta zaten kullanımda",
         )
 
     user = User(

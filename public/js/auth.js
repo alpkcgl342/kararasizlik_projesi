@@ -26,7 +26,7 @@ async function initNav() {
 
   if (user) {
     nav.innerHTML = `
-      <span class="username-badge">${user.username}</span>
+      <span class="username-badge">${escapeHtmlLocal(user.username)}</span>
       <a href="new-poll.html" class="btn">+ Anket</a>
       <button id="logout-btn" type="button">Çıkış</button>
     `;
@@ -40,6 +40,15 @@ async function initNav() {
       <a href="register.html" class="btn">Kayıt Ol</a>
     `;
   }
+}
+
+// Kullanıcı adı bugün kayıt sırasında backend'de [a-zA-Z0-9_]+ ile
+// kısıtlanıyor, ama nav'a innerHTML ile basılan hiçbir değer o garantiye
+// güvenmemeli — burada da (feed.js/poll.js'deki gibi) kaçış uygulanıyor.
+function escapeHtmlLocal(str) {
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
 }
 
 document.addEventListener("DOMContentLoaded", initNav);

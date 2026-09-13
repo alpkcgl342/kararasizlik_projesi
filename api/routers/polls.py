@@ -62,7 +62,9 @@ def _serialize_poll(
             select(Vote).where(Vote.poll_id == poll.id, Vote.user_id == voter_user_id)
         ).first()
         voted_option_id = vote.option_id if vote else None
-    elif voter_guest_id is not None:
+    if voted_option_id is None and voter_guest_id is not None:
+        # Üye girişi yapılmış olsa bile, aynı tarayıcıda daha önce misafir olarak
+        # kullanılmış bir oy varsa "zaten oy kullandı" durumunu doğru yansıt.
         vote = session.exec(
             select(Vote).where(Vote.poll_id == poll.id, Vote.guest_id == voter_guest_id)
         ).first()
@@ -130,7 +132,7 @@ def get_poll(
     poll = _get_poll_or_404(session, poll_id)
 
     voter_guest_id = None
-    if user is None and guest_id is not None:
+    if guest_id is not None:
         try:
             voter_guest_id = UUID(guest_id)
         except ValueError:
@@ -167,6 +169,25 @@ def vote(
         ).first()
         if existing is not None:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Bu ankette zaten oy kullandınız")
+
+        # Ayrıca bu tarayıcıda daha önce misafir olarak oy kullanılmış mı diye bak.
+        # Aksi halde: misafirken oy kullan -> hesap aç/giriş yap -> aynı ankette tekrar
+        # oy kullan akışıyla "bir kişi bir ankette 1 oy" garantisi aynı tarayıcı
+        # içinde bile trivially atlatılabiliyordu.
+        if guest_id is not None:
+            try:
+                prior_guest_id = UUID(guest_id)
+            except ValueError:
+                prior_guest_id = None
+            if prior_guest_id is not None:
+                existing_guest_vote = session.exec(
+                    select(Vote).where(Vote.poll_id == poll.id, Vote.guest_id == prior_guest_id)
+                ).first()
+                if existing_guest_vote is not None:
+                    raise HTTPException(
+                        status_code=status.HTTP_409_CONFLICT, detail="Bu ankette zaten oy kullandınız"
+                    )
+
         new_vote = Vote(poll_id=poll.id, option_id=option.id, user_id=user.id)
     else:
         if guest_id is not None:
